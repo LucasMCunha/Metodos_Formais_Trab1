@@ -3,15 +3,16 @@ class Conjunto {
 
 
     constructor() {
-        elements := new int[0];
+        this.elements := new int[0];
     }
 
     method Add(element: int) returns (contained: bool) 
        requires true
-       ensures elements.Length == old(elements.Length) + 1
+       ensures (contained == true) => elements.Length == old(elements.Length) + 1 
        {
-       contained := true
-       newArray := new int[elements.Length+1];
+       var contained := true
+       var i := 0;
+       var newArray := new int[elements.Length+1];
        while i < elements.Length
             invariant forall j :: 0 <= j < i ==> elements[j] == old(elements[j])
             {
@@ -23,7 +24,7 @@ class Conjunto {
             }
         if contained == true
         {
-        newArray[elements.Length+1] := element;
+        newArray[elements.Length] := element;
         elements := newArray;
         return contained
         }
@@ -34,26 +35,29 @@ class Conjunto {
 
     method Remove(element: int) returns (contained: bool)  
         requires true
-        ensures elements.Length == old(elements.Length) - 1
+        ensures (contained == true) => elements.Length == old(elements.Length) - 1
         {
-        contained := true
+        var contained := true
         var i := 0;
         var k := 0;
-        newArray := new int[elements.Length-1]
-        while i < elements.Length
-            invariant forall j :: 0 <= j < i-1 ==> newArray[j] != element
-            {
-                if elements[i] != element {
-                    newArray[k] := elements [i]
-                    k := k + 1;
+        var newArray := new int[elements.Length-1]
+        if Contains(element) == true{
+            while i < elements.Length
+                invariant forall j :: 0 <= j < i-1 ==> newArray[j] != element
+                {
+                    if elements[i] != element {
+                        newArray[k] := elements [i]
+                        k := k + 1;
+                    }
+                    i := i + 1;
                 }
-                else{
-                   contained := false 
-                }
-                i := i + 1;
+                elements := newArray
+                return contained
             }
-        elements := newArray
-        return contained
+            else{
+                contained := false
+                return contained
+            }
         }
 
 
@@ -80,17 +84,28 @@ class Conjunto {
         return elements.Length
     }
 
-    method empty() returns (empty: bool) 
-    requires true{
-    empty := false
-    if elements == []
-        {
-            empty := true
+method empty() returns (empty: bool) 
+    requires true
+    {
+    empty := false;
+    if elements == [] {
+        empty := true;
         }
-    return empty
+    return empty;
+    }
+
+method addAll(toBeAdded: int[])
+    requires toBeAdded != []
+    {
+    var i := 0;
+    while i < toBeAdded.Length
+        invariant j :: 0 <= j < i ==> Contains(toBeAdded[j])
+    {
+        Add(toBeAdded[i]);
+        i := i + 1;
+    }
     }
 }
-
 //    method NumberOfElements()
 //        requires elements.Length != 0
 //        {
@@ -118,7 +133,3 @@ class Conjunto {
 //            return count
 //    }
                 
-            }
-            return count
-    }
-}
