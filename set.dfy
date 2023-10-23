@@ -1,5 +1,23 @@
 // Bernardo Zomer, Carlo Mantovani and Lucas Cunha
 
+method Main() {
+    var set_ := new Set();
+    var twoIsNewElement := set_.Add(2);
+    assert twoIsNewElement;
+    
+    twoIsNewElement := set_.Add(2);
+    var containsTwo := set_.Contains(2);
+    var size := set_.Size();
+    var isEmpty := set_.IsEmpty();
+    assert !twoIsNewElement && containsTwo && size == 1 && !isEmpty;
+
+    // TODO: Add assertions according to the following operations.
+    var twoWasInSet := set_.Remove(2);
+    twoWasInSet := set_.Remove(2);
+    size := set_.Size();
+    isEmpty := set_.IsEmpty();
+}
+
 // An array-based set of elements of type int.
 class {:autocontracts true} Set {
     var elements: array<int>
