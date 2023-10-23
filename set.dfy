@@ -1,4 +1,4 @@
-class Conjunto {
+class Set {
    ghost var elements: array<int>;
 
 
