@@ -1,109 +1,67 @@
+// Bernardo Zomer, Carlo Mantovani and Lucas Cunha
+
+// An array-based set of elements of type int.
 class Set {
-  ghost var elements: array<int>
+    var elements: array<int>
 
-  constructor() {
-    this.elements := new int[0];
-  }
+    constructor() {
+        this.elements := new int[0];
+    }
 
-  method Add(element: int) returns (contained: bool)
-    requires true
-    ensures (contained == true) ==> elements.Length == old(elements.Length) + 1
-  {
-    var contained := true;
-    var i := 0;
-    var newArray := new int[elements.Length+1];
+    // Ensures an element is in the set
+    // and returns true if it was previously not present.
+    method Add(e: int) returns (isNewElement: bool)
+        modifies this.elements
+        // Ensures the element will be in the set.
+        ensures exists j :: 0 <= j < this.elements.Length && this.elements[j] == e
+        ensures isNewElement ==>
+            // Ensures the element was not present in the set if isNewElement is true.
+               forall j :: 0 <= j < old(this.elements).Length ==> old(this.elements)[j] != e
+            // Ensures the first n elements of the element array were not changed, 
+            // where n is the length of the old array.
+            && this.elements[0..old(this.elements.Length)] == old(this.elements[..]) 
+            // Ensures the last index of the element array contains the element.
+            && this.elements[this.elements.Length - 1] == e 
+        // Ensures the element array has not been changed 
+        // if the element was already present in the set.
+        ensures !isNewElement ==> this.elements == old(this.elements)
 
-    while i < elements.Length
-      invariant forall j :: 0 <= j < i ==> elements[j] == old(elements[j])
+    // Ensures an element is not in the set
+    // and returns true if it was previously present.
+    method Remove(e: int) returns (wasInSet: bool)
+        modifies this.elements 
+        // Ensures the element will not be in the set.
+        ensures forall j :: 0 <= j < this.elements.Length ==> this.elements[j] != e
+        // Ensures the element was present in the set if wasInSet is true.
+        ensures wasInSet ==> exists j :: 0 <= j < old(this.elements).Length && old(this.elements)[j] == e
+        // Ensures the element array has not been changed
+        // if the element was not present in the set.
+        ensures !wasInSet ==> this.elements == old(this.elements)
+
+    // Returns whether the set contains an element or not.
+    method Contains(e: int) returns (contains: bool)
+        ensures contains ==> exists j :: 0 <= j < this.elements.Length && this.elements[j] == e
     {
-      if element == elements[i] {
-        contained := false;
-      }
-
-      newArray[i] := elements[i];
-      i := i + 1;
-    }
-
-    if contained == true {
-      newArray[elements.Length] := element;
-      elements := newArray;
-      return contained;
-    } else {
-      return contained;
-    }
-  }
-
-  method Remove(element: int) returns (contained: bool)
-    requires true
-    ensures (contained == true) ==> elements.Length == old(elements.Length) - 1
-  {
-    var contained := true;
-    var i := 0;
-    var k := 0;
-    var newArray := new int[elements.Length-1];
-
-    if Contains(element) == true {
-      while i < elements.Length
-        invariant forall j :: 0 <= j < i-1 ==> newArray[j] != element
-      {
-        if elements[i] != element {
-          newArray[k] := elements [i];
-          k := k + 1;
+        for i := 0 to this.elements.Length {
+            if this.elements[i] == e {
+                return true;
+            }
         }
 
-        i := i + 1;
-      }
-
-      elements := newArray;
-      return contained;
-    } else{
-      contained := false;
-      return contained;
+        return false;
     }
-  }
 
-  method Contains(element: int) returns (contained: bool)
-    requires elements.Length != 0
-  {
-    var i := 0;
-    contained := false;
-    while i < elements.Length
-      invariant forall j :: 0 <= j < i ==> elements[j] != element || elements [j] == element
+    // Returns the amount of elements in the set.
+    method Size() returns (length: int)
+        ensures length == this.elements.Length
     {
-      if elements[i] == element {
-        contained := true;
-        return;
-      }
-      i := i + 1;
+        return this.elements.Length;
     }
-    return contained;
-  }
 
-  method NumberOfElements()
-    requires true
-  {
-    return elements.Length;
-  }
-
-  method empty() returns (empty: bool)
-    requires true
-  {
-    empty := false;
-    if elements == [] {
-      empty := true;
-    }
-    return empty;
-  }
-
-  method addAll(toBeAdded: array<int>)
-    requires toBeAdded != []
-  {
-    var i := 0;
-    while i < toBeAdded.Length
-      invariant forall j :: 0 <= j < i ==> Contains(toBeAdded[j])
+    // Returns whether the set is empty or not.
+    method IsEmpty() returns (isEmpty: bool)
+        ensures isEmpty ==> this.elements.Length == 0
     {
-      Add(toBeAdded[i]);
-      i := i + 1;
+        return this.elements.Length == 0;
     }
-  }
 }
