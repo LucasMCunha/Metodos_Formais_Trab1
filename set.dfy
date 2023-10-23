@@ -28,7 +28,7 @@ class {:autocontracts true} Set {
     // and returns true if it was previously not present.
     method Add(e: int) returns (isNewElement: bool)
         // Ensures the element will be in the set.
-        ensures e in this.elements[..]
+        ensures e in this.ghostElements
         ensures isNewElement ==>
             // Ensures the element was not present in the set if isNewElement is true.
             !(old(Contains(e)))
@@ -45,7 +45,7 @@ class {:autocontracts true} Set {
 
         if isNewElement {
             var newElements := new int[this.size + 1];
-            forall i | 0 <= i < size { newElements[i] := this.elements[i]; }
+            forall i | 0 <= i < this.size { newElements[i] := this.elements[i]; }
             newElements[this.size] := e;
             this.elements := newElements;
             this.size := this.size + 1;
@@ -56,15 +56,39 @@ class {:autocontracts true} Set {
 
     // Ensures an element is not in the set
     // and returns true if it was previously present.
-    method Remove(e: int) returns (wasInSet: bool)
-        modifies this.elements 
-        // Ensures the element will not be in the set.
-        ensures !(e in this.elements[..])
+    method Remove(e: int) returns (wasInSet: bool) 
         // Ensures the element was present in the set if wasInSet is true.
-        ensures wasInSet ==> e in old(this.elements[..])
+        ensures wasInSet ==> e in old(this.ghostElements)
         // Ensures the element array has not been changed
         // if the element was not present in the set.
-        ensures !wasInSet ==> this.elements == old(this.elements)
+        ensures !wasInSet ==> this.ghostElements == old(this.ghostElements)
+        ensures Valid()
+    {
+        wasInSet := this.Contains(e);
+
+        if wasInSet {
+            var eAt := 0;
+
+            for i := 0 to this.size { 
+                if this.elements[i] == e { 
+                    eAt := i;
+                    break;
+                } 
+            }
+
+            var newElementsSeq := this.elements[..eAt] + this.elements[eAt + 1..];
+            var newElements := new int[this.size - 1];
+
+            forall i | 0 <= i < this.size - 1 { 
+                newElements[i] := newElementsSeq[i]; 
+            }
+
+            this.elements := newElements;
+            this.size := this.size - 1;
+            this.ghostElements := this.elements[..];
+            this.ghostSize := this.size;
+        }
+    }
 
     // Returns whether the set contains an element or not.
     function Contains(e: int): bool
