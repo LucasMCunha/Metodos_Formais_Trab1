@@ -13,15 +13,15 @@ class Set {
     method Add(e: int) returns (isNewElement: bool)
         modifies this.elements
         // Ensures the element will be in the set.
-        ensures exists j :: 0 <= j < this.elements.Length && this.elements[j] == e
+        ensures e in this.elements[..]
         ensures isNewElement ==>
             // Ensures the element was not present in the set if isNewElement is true.
-               forall j :: 0 <= j < old(this.elements).Length ==> old(this.elements)[j] != e
+            !(e in old(this.elements[..]))
             // Ensures the first n elements of the element array were not changed, 
             // where n is the length of the old array.
             && this.elements[0..old(this.elements.Length)] == old(this.elements[..]) 
             // Ensures the last index of the element array contains the element.
-            && this.elements[this.elements.Length - 1] == e 
+            && this.elements[this.elements.Length - 1] == e
         // Ensures the element array has not been changed 
         // if the element was already present in the set.
         ensures !isNewElement ==> this.elements == old(this.elements)
@@ -31,16 +31,16 @@ class Set {
     method Remove(e: int) returns (wasInSet: bool)
         modifies this.elements 
         // Ensures the element will not be in the set.
-        ensures forall j :: 0 <= j < this.elements.Length ==> this.elements[j] != e
+        ensures !(e in this.elements[..])
         // Ensures the element was present in the set if wasInSet is true.
-        ensures wasInSet ==> exists j :: 0 <= j < old(this.elements).Length && old(this.elements)[j] == e
+        ensures wasInSet ==> e in old(this.elements[..])
         // Ensures the element array has not been changed
         // if the element was not present in the set.
         ensures !wasInSet ==> this.elements == old(this.elements)
 
     // Returns whether the set contains an element or not.
     method Contains(e: int) returns (contains: bool)
-        ensures contains ==> exists j :: 0 <= j < this.elements.Length && this.elements[j] == e
+        ensures contains ==> e in this.elements[..]
     {
         for i := 0 to this.elements.Length {
             if this.elements[i] == e {
