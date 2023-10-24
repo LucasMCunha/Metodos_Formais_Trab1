@@ -46,7 +46,7 @@ class {:autocontracts true} Set {
     // and returns true if it was previously not present.
     method Add(e: int) returns (isNewElement: bool)
         // Ensures the element will be in the set.
-        ensures e in this.ghostElements
+        ensures Contains(e)
         ensures isNewElement ==>
             // Ensures the element was not present in the set if isNewElement is true.
             !(old(Contains(e)))
