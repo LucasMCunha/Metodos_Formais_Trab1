@@ -73,17 +73,21 @@ class {:autocontracts true} Conjunto
         }
     }
 
+/*
     method Remove(element: int) returns (contained:bool) //TO DO: Finish
     ensures Valid()
     ensures (Contains(element)) ==> size == old(size) - 1
+    ensures (contained ==> sizeGhost == old(sizeGhost) - 1)
+    ensures (!contained ==> Content == old(Content) && 
+                        sizeGhost == old(sizeGhost) && 
+                        element in Content)
         {
-        contained := true;
         var i := 0;
         var k := 0;
         if Contains(element) == true{
             var newArray := new int[size-1];
             while i < size-1
-                invariant forall j :: 0 <= j < i-1 ==> newArray[j] != element
+                invariant forall j :: 0 <= j < i ==> newArray[j] != element
                 {
                     if elements[i] != element {
                         newArray[k] := elements [i];
@@ -99,18 +103,27 @@ class {:autocontracts true} Conjunto
             }
 
     }
+*/
+
 
     method addAll(toBeAdded: array<int>) //TO DO: Finish
     ensures Valid()
+    ensures toBeAdded.Length > 0
+    ensures exists j :: 0 <= j < toBeAdded.Length && Contains(toBeAdded[j]) ==> sizeGhost > old(sizeGhost)
     {
-    var i := 0;
-    while i < toBeAdded.Length
-        invariant forall j :: 0 <= j < i ==> Contains(toBeAdded[j])
-    {
-        var aux := Add(toBeAdded[i]);
-        i := i + 1;
+    var k := 0;
+    var newArray := new int[size + toBeAdded.Length];
+        forall i | 0 <= i < size {
+                newArray[i] := elements[i];
+            }
+        forall j | 0 <= j < toBeAdded.Length {
+            if !(Contains(toBeAdded[j])) 
+            {
+                newArray[size+k] := toBeAdded[j];
+                k := k +1;
+        }
     }
-    }
+}
 }
 method Main()
 {
