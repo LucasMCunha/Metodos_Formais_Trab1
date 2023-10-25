@@ -30,6 +30,7 @@ class {:autocontracts true} Set {
         this.ghostElements == this.elements[..]
         && this.ghostSize == this.size
         && this.size == this.elements.Length
+        && (forall i,j :: 0<=i<j<size ==> elements[i] != elements[j])
     }
 
     constructor() 
@@ -86,27 +87,46 @@ class {:autocontracts true} Set {
 
         if wasInSet {
             var eAt := 0;
+            var aux := false;
 
             for i := 0 to this.size { 
                 if this.elements[i] == e { 
                     eAt := i;
+                    assert elements[eAt] == e;
+                    aux := true;
                     break;
                 } 
             }
 
+            if aux == true{
+            assert forall j :: 0<=j<size ==> ghostElements[j] == elements[j];
+            assert ghostElements[eAt] == e;
+            assert exists j :: 0<=j<size && ghostElements[j] == e;
+            assert (forall i,j :: 0<=i<j<size ==> elements[i] != elements[j]);
             var newElementsSeq := this.elements[..eAt] + this.elements[eAt + 1..];
+            assert forall j :: 0<=j<size-1 ==> newElementsSeq[j] != elements[eAt];
             var newElements := new int[this.size - 1];
-
+                
             forall i | 0 <= i < this.size - 1 { 
                 newElements[i] := newElementsSeq[i]; 
             }
-
+            
+            assert forall j :: 0<=j<size-1 ==> elements[eAt] != newElementsSeq[j];
             this.elements := newElements;
+            assert forall j :: 0<=j<size-1 ==> elements[j] == newElementsSeq[j];
             this.size := this.size - 1;
+            assert forall j :: 0<=j<size ==> elements[j] != e;
             this.ghostElements := this.elements[..];
+            assert forall j :: 0<=j<size ==> ghostElements[j] != e;
+            assert exists j :: 0<=j<size+1 && old(ghostElements[j]) == e;
+            assert forall j :: (0<=j<size) ==> ghostElements[j] != e;
+            // Se descobrir pq isso embaixo nao funciona, mata a charada.
+            assert size > 1 ==> forall j :: (0<=j<size+1 && old(ghostElements[j]) == e) ==> (exists i :: 0<=i<size && ghostElements[i] != old(ghostElements[j]));
+            assert size > 1 ==> forall j :: (0<=j<size+1) ==> (exists i :: 0<=i<size && (ghostElements[i] != old(ghostElements[j])) ||  old(ghostElements[j]) == e);
             this.ghostSize := this.size;
         }
     }
+}
 
     // Returns whether the set contains an element or not.
     function Contains(e: int): bool
