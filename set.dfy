@@ -82,8 +82,9 @@ class {:autocontracts true} Set {
         // Ensures the rest of the array is unchanged.
         ensures forall x | x in old(this.ghostElements) && x != e ::
             x in this.ghostElements 
-        // Ensures the element was present in the set if wasInSet is true.
-        ensures wasInSet ==> e in old(this.ghostElements)
+        // Ensures the element was present in the set if wasInSet is true
+        // and that the size of the set is now one less than before.
+        ensures wasInSet ==> e in old(this.ghostElements) && Size() == old(Size()) - 1
         // Ensures the element array has not been changed
         // if the element was not present in the set.
         ensures !wasInSet ==> this.ghostElements == old(this.ghostElements)
