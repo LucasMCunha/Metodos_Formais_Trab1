@@ -22,6 +22,17 @@ method Main() {
     size := set_.Size();
     isEmpty := set_.IsEmpty();
     assert !twoWasInSet && size == 0 && isEmpty;
+
+    // Tests for addition of multiple elements.
+    var es := new int[] [1, 2, 3, 4];
+    set_.AddAll(es);
+    size := set_.Size();
+    isEmpty := set_.IsEmpty();
+    assert size == 4 && !isEmpty;
+
+    for i := 0 to es.Length {
+        assert es[i] in set_.ghostElements;
+    }
 }
 
 // An array-based set of elements of type int.
