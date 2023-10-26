@@ -51,10 +51,10 @@ class {:autocontracts true} Set {
         ensures isNewElement ==>
             // Ensures the element was not present in the set if isNewElement is true.
             !(old(Contains(e)))
-            // Ensures the array is the same as before 
-            // with the added element at the end.
-            && this.ghostElements == old(this.ghostElements) + [e]
+            // Ensures the array size increased by one.
             && this.ghostSize == old(this.ghostSize + 1)
+            // Ensures the other elements of the set remain there.
+            && forall f | f in old(this.ghostElements) :: f in this.ghostElements
         // Ensures the element array has not been changed 
         // if the element was already present in the set.
         ensures !isNewElement ==> this.ghostElements == old(this.ghostElements)
@@ -66,6 +66,7 @@ class {:autocontracts true} Set {
             var newElements := new int[this.size + 1];
             forall i | 0 <= i < this.size { newElements[i] := this.elements[i]; }
             newElements[this.size] := e;
+            assert newElements[..this.size] == this.ghostElements;
             this.elements := newElements;
             this.size := this.size + 1;
             this.ghostElements := this.elements[..];
@@ -108,8 +109,7 @@ class {:autocontracts true} Set {
                     }
 
                     assert newElements[..i] + [e] + newElements[i..] == this.ghostElements
-                        ==> forall f | f in this.ghostElements :: 
-                        f != e ==> f in newElements[..];
+                        ==> forall f | f in this.ghostElements :: f != e ==> f in newElements[..];
 
                     break;
                 }
