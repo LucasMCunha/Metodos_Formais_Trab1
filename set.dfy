@@ -4,7 +4,7 @@
 method Main() {
     var set_ := new Set();
 
-    // Tests for addition of single.
+    // Tests for addition of single elements.
     var twoIsNewElement := set_.Add(2);
     assert twoIsNewElement;
 
@@ -129,6 +129,35 @@ class {:autocontracts true} Set {
             this.ghostElements := this.elements[..];
             this.ghostSize := this.size;
         }
+    }
+    
+    // Adds every element from a sequence of unique elements
+    // which are not present in the set to it.
+    method AddAll(es: seq<int>)
+        // Requires every element in the sequence to be unique.
+        requires forall i, j :: 0 <= i < j < |es| ==> es[i] != es[j]
+        // Requires the set not to contain any of the elements in the sequence.
+        requires forall j :: 0 <= j < |es| ==> !(Contains(es[j]))
+        // Ensures every element is added to the set.
+        ensures forall e | e in es :: e in this.ghostElements
+        ensures Valid()
+    {
+        var newArray := new int[this.size + |es|];
+        var i := 0;
+        var e_len := this.elements.Length;
+
+        forall i | 0 <= i < this.size {
+            newArray[i] := this.elements[i];
+        }
+
+        forall i | 0 <= i < |es| {
+            newArray[i + this.size] := es[i];
+        }
+
+        this.elements := newArray;
+        this.size := this.size + |es|;
+        this.ghostElements := this.elements[..];
+        this.ghostSize := this.size;
     }
 
     // Returns whether the set contains an element or not.
