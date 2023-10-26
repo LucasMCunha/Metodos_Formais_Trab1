@@ -107,10 +107,9 @@ class {:autocontracts true} Set {
                         newElements[j - 1] := this.elements[j];
                     }
 
-                    var leftOver := this.elements[..i] + this.elements[i + 1..];
-                    assert (newElements[..] == leftOver
-                        && leftOver[..i] + [e] + leftOver[i..] == this.ghostElements
-                        && !(e in leftOver)) ==> forall f | f in this.ghostElements :: f != e ==> f in leftOver;
+                    assert newElements[..i] + [e] + newElements[i..] == this.ghostElements
+                        ==> forall f | f in this.ghostElements :: 
+                        f != e ==> f in newElements[..];
 
                     break;
                 }
