@@ -143,9 +143,7 @@ class {:autocontracts true} Set {
         ensures forall i | 0 <= i < es.Length :: Contains(es[i])
         ensures Valid()
     {
-        var newArray := new int[this.size + |es|];
-        var i := 0;
-        var e_len := this.elements.Length;
+        var newArray := new int[this.size + es.Length];
 
         forall i | 0 <= i < this.size {
             newArray[i] := this.elements[i];
