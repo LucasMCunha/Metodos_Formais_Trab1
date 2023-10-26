@@ -78,6 +78,9 @@ class {:autocontracts true} Set {
     method Remove(e: int) returns (wasInSet: bool)
         // Ensures the element was removed.
         ensures !Contains(e)
+        // Ensures the rest of the array is unchanged.
+        ensures forall x | x in old(this.ghostElements) && x != e ::
+            x in this.ghostElements 
         // Ensures the element was present in the set if wasInSet is true.
         ensures wasInSet ==> e in old(this.ghostElements)
         // Ensures the element array has not been changed
@@ -100,9 +103,14 @@ class {:autocontracts true} Set {
                         newElements[j] := this.elements[j];
                     }
 
-                    forall j | i < j < size {
+                    forall j | i < j < this.size {
                         newElements[j - 1] := this.elements[j];
                     }
+
+                    var leftOver := this.elements[..i] + this.elements[i + 1..];
+                    assert (newElements[..] == leftOver
+                        && leftOver[..i] + [e] + leftOver[i..] == this.ghostElements
+                        && !(e in leftOver)) ==> forall f | f in this.ghostElements :: f != e ==> f in leftOver;
 
                     break;
                 }
