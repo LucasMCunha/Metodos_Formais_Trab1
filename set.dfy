@@ -139,7 +139,8 @@ class {:autocontracts true} Set {
         // Requires the set not to contain any of the elements in the sequence.
         requires forall j :: 0 <= j < |es| ==> !(Contains(es[j]))
         // Ensures every element is added to the set.
-        ensures forall e | e in es :: e in this.ghostElements
+        ensures ghostElements == old(ghostElements) + es
+        ensures forall i | 0<=i<|es| :: Contains(es[i])
         ensures Valid()
     {
         var newArray := new int[this.size + |es|];
