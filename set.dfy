@@ -4,7 +4,7 @@ method Main() {
     var set_ := new Set();
     var twoIsNewElement := set_.Add(2);
     assert twoIsNewElement;
-    
+
     twoIsNewElement := set_.Add(2);
     var containsTwo := set_.Contains(2);
     var size := set_.Size();
@@ -29,10 +29,11 @@ class {:autocontracts true} Set {
     ghost predicate Valid() {
         this.ghostElements == this.elements[..]
         && this.ghostSize == this.size
-        && this.size == this.elements.Length
+        && this.size == this.elements.Length 
+        && forall i, j | 0 <= i < j < this.size :: this.elements[i] != this.elements[j]
     }
 
-    constructor() 
+    constructor()
         ensures this.ghostElements == []
         ensures this.ghostSize == 0
     {
@@ -74,7 +75,9 @@ class {:autocontracts true} Set {
 
     // Ensures an element is not in the set
     // and returns true if it was previously present.
-    method Remove(e: int) returns (wasInSet: bool) 
+    method Remove(e: int) returns (wasInSet: bool)
+        // Ensures the element was removed.
+        ensures !Contains(e)
         // Ensures the element was present in the set if wasInSet is true.
         ensures wasInSet ==> e in old(this.ghostElements)
         // Ensures the element array has not been changed
@@ -85,24 +88,30 @@ class {:autocontracts true} Set {
         wasInSet := this.Contains(e);
 
         if wasInSet {
-            var eAt := 0;
-
-            for i := 0 to this.size { 
-                if this.elements[i] == e { 
-                    eAt := i;
-                    break;
-                } 
-            }
-
-            var newElementsSeq := this.elements[..eAt] + this.elements[eAt + 1..];
             var newElements := new int[this.size - 1];
 
-            forall i | 0 <= i < this.size - 1 { 
-                newElements[i] := newElementsSeq[i]; 
+            var i := 0;
+            while i < this.size 
+                invariant 0 <= i <= this.size 
+                invariant forall j | 0 <= j < i :: this.elements[j] != e 
+            {
+                if this.elements[i] == e {
+                    forall j | 0 <= j < i {
+                        newElements[j] := this.elements[j];
+                    }
+
+                    forall j | i < j < size {
+                        newElements[j - 1] := this.elements[j];
+                    }
+
+                    break;
+                }
+
+                i := i + 1;
             }
 
             this.elements := newElements;
-            this.size := this.size - 1;
+            this.size := this.elements.Length;
             this.ghostElements := this.elements[..];
             this.ghostSize := this.size;
         }
