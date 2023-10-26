@@ -1,7 +1,10 @@
 // Bernardo Zomer, Carlo Mantovani and Lucas Cunha
 
+// Tests for correct behavior from a set.
 method Main() {
     var set_ := new Set();
+
+    // Tests for addition of single.
     var twoIsNewElement := set_.Add(2);
     assert twoIsNewElement;
 
@@ -11,11 +14,14 @@ method Main() {
     var isEmpty := set_.IsEmpty();
     assert !twoIsNewElement && containsTwo && size == 1 && !isEmpty;
 
-    // TODO: Add assertions according to the following operations.
+    // Tests for removal.
     var twoWasInSet := set_.Remove(2);
+    assert twoWasInSet;
+    
     twoWasInSet := set_.Remove(2);
     size := set_.Size();
     isEmpty := set_.IsEmpty();
+    assert !twoWasInSet && size == 0 && isEmpty;
 }
 
 // An array-based set of elements of type int.
