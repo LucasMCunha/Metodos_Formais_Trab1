@@ -131,16 +131,16 @@ class {:autocontracts true} Set {
         }
     }
     
-    // Adds every element from a sequence of unique elements
+    // Adds every element from a list
     // which are not present in the set to it.
-    method AddAll(es: seq<int>)
+    method AddAll(es: array<int>)
         // Requires every element in the sequence to be unique.
-        requires forall i, j :: 0 <= i < j < |es| ==> es[i] != es[j]
+        requires forall i, j :: 0 <= i < j < es.Length ==> es[i] != es[j]
         // Requires the set not to contain any of the elements in the sequence.
-        requires forall j :: 0 <= j < |es| ==> !(Contains(es[j]))
+        requires forall j :: 0 <= j < es.Length ==> !(Contains(es[j]))
         // Ensures every element is added to the set.
-        ensures ghostElements == old(ghostElements) + es
-        ensures forall i | 0<=i<|es| :: Contains(es[i])
+        ensures ghostElements == old(ghostElements) + es[..]
+        ensures forall i | 0 <= i < es.Length :: Contains(es[i])
         ensures Valid()
     {
         var newArray := new int[this.size + |es|];
@@ -151,12 +151,12 @@ class {:autocontracts true} Set {
             newArray[i] := this.elements[i];
         }
 
-        forall i | 0 <= i < |es| {
+        forall i | 0 <= i < es.Length {
             newArray[i + this.size] := es[i];
         }
 
         this.elements := newArray;
-        this.size := this.size + |es|;
+        this.size := this.size + es.Length;
         this.ghostElements := this.elements[..];
         this.ghostSize := this.size;
     }
